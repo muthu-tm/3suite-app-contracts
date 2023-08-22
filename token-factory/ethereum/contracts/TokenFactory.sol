@@ -13,21 +13,23 @@ contract TokenFactory {
 
     function deployToken(
         string calldata _name,
-        string calldata _ticker,
+        string calldata _symbol,
         uint256 _supply,
+        uint8 _tokDecimals,
         bool _isMintable,
         bool _isBurnable,
         bool _isPausable
     ) public returns (address) {
         ERC20Token token = new ERC20Token(
             _name,
-            _ticker,
+            _symbol,
             _supply,
+            _tokDecimals,
             _isMintable,
             _isBurnable,
             _isPausable
         );
-        token.transfer(msg.sender, _supply);
+        // token.transfer(msg.sender, _supply);
 
         // update the storage
         tokens.push(address(token));

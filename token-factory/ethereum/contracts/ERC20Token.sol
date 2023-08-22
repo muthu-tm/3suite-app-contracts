@@ -2,7 +2,6 @@
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -10,6 +9,7 @@ contract ERC20Token is ERC20, Pausable, Ownable {
     bool private isMintable;
     bool private isBurnable;
     bool private isPausable;
+    uint8 _decimals;
 
     modifier isTokenMintable() {
         require(
@@ -31,18 +31,24 @@ contract ERC20Token is ERC20, Pausable, Ownable {
 
     constructor(
         string memory _name,
-        string memory _ticker,
+        string memory _symbol,
         uint256 _supply,
+        uint8 _tokDecimals,
         bool _isMintable,
         bool _isBurnable,
         bool _isPausable
-    ) ERC20(_name, _ticker) {
+    ) ERC20(_name, _symbol) {
         isMintable = _isMintable;
         isBurnable = _isBurnable;
         isPausable = _isPausable;
 
-        _mint(msg.sender, _supply);
+        _decimals = _tokDecimals;
+        _mint(tx.origin, _supply * 10 ** decimals());
         transferOwnership(tx.origin);
+    }
+
+    function decimals() override public view returns (uint8) {
+        return _decimals;
     }
 
     function mint(address to, uint256 amount) public onlyOwner isTokenMintable {
