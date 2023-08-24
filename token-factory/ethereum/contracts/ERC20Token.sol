@@ -56,10 +56,9 @@ contract ERC20Token is ERC20, Pausable, Ownable {
     }
 
     function burn(
-        address account,
         uint256 amount
-    ) public onlyOwner isTokenBurnable {
-        _burn(account, amount);
+    ) public isTokenBurnable {
+        _burn(_msgSender(), amount);
     }
 
     function burnFrom(
@@ -76,5 +75,13 @@ contract ERC20Token is ERC20, Pausable, Ownable {
 
     function unpause() public onlyOwner isTokenPausable {
         _unpause();
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 amount)
+        internal
+        whenNotPaused
+        override
+    {
+        super._beforeTokenTransfer(from, to, amount);
     }
 }
