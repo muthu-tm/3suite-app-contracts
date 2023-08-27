@@ -54,8 +54,8 @@ contract MultiSender is Ownable {
     // mappting that stores token transfer count
     mapping(address => uint256) public erc20TokenTransfers;
 
-    // total native token transfer count
-    uint256 public nativeTokenTransfers;
+    // mappting that stores users -> native token transfers
+    mapping(address => uint256) public nativeTokenTransfers;
 
     // transaction price
     uint256 public pricePerTx;
@@ -74,15 +74,25 @@ contract MultiSender is Ownable {
             require(_addresses[i] != address(0), "Address invalid");
             require(_values[i] > 0, "Value invalid");
 
-            _addresses[i].transfer(_values[i]);
             totalTokensSent = totalTokensSent.add(_values[i]);
         }
-
-        if (msg.value == 0 && credits[msg.sender] > 0) {
+        require(msg.value >= totalTokensSent, "Insufficient Payable Amount!!");
+        if (credits[msg.sender] > 0) {
             credits[msg.sender] = credits[msg.sender].sub(1);
+        } else {
+            require(
+                msg.value >= totalTokensSent.add(pricePerTx),
+                "Insufficient Amount for Txn Price!!"
+            );
         }
 
-        nativeTokenTransfers = nativeTokenTransfers.add(totalTokensSent);
+        for (uint i = 0; i < _addresses.length; i += 1) {
+            _addresses[i].transfer(_values[i]);
+        }
+
+        nativeTokenTransfers[msg.sender] = nativeTokenTransfers[msg.sender].add(
+            totalTokensSent
+        );
         userTxnCount[msg.sender]++;
         emit Transfer(
             address(0),
